@@ -11,10 +11,41 @@ module.exports = async (req, res) => {
 
     // Download the image
     const response = await fetch(imageUrl);
+    
+    // Check if the response is ok
+    if (!response.ok) {
+      return res.status(400).json({ 
+        error: `Failed to fetch image: ${response.status} ${response.statusText}`,
+        url: imageUrl
+      });
+    }
+    
+    // Check content type
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('image')) {
+      const text = await response.text();
+      return res.status(400).json({ 
+        error: 'Response is not an image',
+        contentType: contentType,
+        responsePreview: text.substring(0, 500)
+      });
+    }
+    
     const buffer = await response.buffer();
     
-    // Get image metadata
-    const metadata = await sharp(buffer).metadata();
+    // Verify it's a valid image
+    let metadata;
+    try {
+      metadata = await sharp(buffer).metadata();
+    } catch (err) {
+      return res.status(400).json({ 
+        error: 'Invalid image format',
+        details: err.message,
+        bufferSize: buffer.length,
+        contentType: contentType
+      });
+    }
+    
     const { width, height } = metadata;
     
     // Calculate chunks
@@ -44,9 +75,17 @@ module.exports = async (req, res) => {
       });
     }
     
-    return res.status(200).json({ chunks });
+    return res.status(200).json({ 
+      success: true,
+      originalWidth: width,
+      originalHeight: height,
+      chunks 
+    });
     
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ 
+      error: error.message,
+      stack: error.stack 
+    });
   }
 };
