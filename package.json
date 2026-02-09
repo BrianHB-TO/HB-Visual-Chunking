@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "dependencies": {
     "sharp": "^0.33.0",
-    "node-fetch": "^2.7.0",
-    "googleapis": "^128.0.0"
+    "node-fetch": "^2.7.0"
   }
 }
