@@ -1,7 +1,7 @@
 {
   "functions": {
-    "api/chunk-image.js": {
-      "memory": 3008,
+    "api/process-url.js": {
+      "memory": 1024,
       "maxDuration": 60
     }
   }
