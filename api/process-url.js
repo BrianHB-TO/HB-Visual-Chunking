@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { url, chunkIndex = 1 } = req.body;
+    const { url, chunkIndex = 1, format = 'binary' } = req.body;
 
     if (!url) {
       return res.status(400).json({ error: 'url parameter required' });
@@ -62,7 +62,19 @@ module.exports = async (req, res) => {
       .replace(/[^a-zA-Z0-9-]/g, '')
       .toLowerCase();
 
-    // Return raw PNG binary with metadata in headers
+    // Return base64 JSON (for Claude comparison)
+    if (format === 'base64') {
+      return res.status(200).json({
+        success: true,
+        url: url,
+        urlSlug: urlSlug,
+        chunkIndex: chunkIndex,
+        totalChunks: totalChunks,
+        chunk: chunkBuffer.toString('base64')
+      });
+    }
+
+    // Return raw PNG binary (for baseline uploads)
     res.setHeader('X-Url-Slug', urlSlug);
     res.setHeader('X-Chunk-Index', chunkIndex.toString());
     res.setHeader('X-Total-Chunks', totalChunks.toString());
